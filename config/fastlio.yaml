@@ -1,0 +1,83 @@
+# FAST-LIO common interface. Topic names can also be overridden in launch.
+cloud_topic: /cloud_registered
+odom_topic: /Odometry
+map_frame: camera_init
+input_cloud_in_world: true
+subscriber_queue_size: 10
+sync_queue_size: 30
+sync_tolerance: 0.05
+
+# Sparse hash occupancy map.
+resolution: 0.20
+min_range: 1.0
+max_range: 80.0
+prob_hit: 0.70
+prob_miss: 0.40
+prob_min: 0.12
+prob_max: 0.97
+occupied_probability: 0.60
+
+# Occupancy criterion switch. false (default) decides occupancy from the fused
+# log-odds probability above; true decides it from a truncated signed distance
+# field (TSDF) fused along each ray cast. The probability update is always kept
+# up to date, so the criterion can be switched without changing anything else.
+use_tsdf: false
+tsdf_truncation: 0.60
+tsdf_surface_band: 0.10
+tsdf_max_weight: 30.0
+
+# Truncated ESDF stored in every allocated hash voxel. Increase the update
+# interval if the global map becomes large.
+esdf_max_distance: 5.0
+esdf_update_every_n_frames: 5
+
+# Dynablox-style ever-free dynamic filtering. Names/semantics follow
+# ethz-asl/dynablox (EverFreeIntegrator + Clustering).
+use_dynablox: true
+# Height band used to restrict dynamic detection. By default it is interpreted
+# in the SENSOR frame (z relative to the LiDAR); set dynamic_z_use_map_frame to
+# true to use the map frame, which is far more robust for flat ground.
+dynamic_z_use_map_frame: false
+dynamic_z_min: -2.0
+dynamic_z_max: 2.5
+ever_free_burn_in_period: 5
+ever_free_temporal_buffer_frames: 2
+ever_free_reset_occupied_frames: 150
+ever_free_neighbor_connectivity: 26
+# Free margin for the ever-free test (probability mode only). 0 disables it.
+# Raise it (e.g. 0.2) when flat surfaces such as facades are falsely dynamic.
+ever_free_max_free_probability: 0.0
+cluster_connectivity: 6
+cluster_grow_clusters_twice: false
+cluster_min_separation: 0.2
+cluster_min_extent: 0.0
+cluster_max_extent: 200000.0
+cluster_min_points: 20
+cluster_max_points: 200000
+
+# Dynamic object tracking + velocity prediction. Published on ~dynamic_objects
+# as a MarkerArray (bounding box, id/speed label, velocity arrow, predicted
+# position sphere).
+use_tracking: true
+track_max_association_distance: 1.0
+track_min_track_duration: 2
+track_max_misses: 5
+track_kalman_process_noise: 2.0
+track_kalman_measurement_noise: 0.5
+track_velocity_horizon: 1.0
+track_max_velocity: 20.0
+track_min_velocity: 0.1
+track_max_tracks: 500
+track_publish_unconfirmed: false
+
+# Odom body frame -> LiDAR frame extrinsic, [x, y, z] and [roll, pitch, yaw].
+# FAST-LIO odometry is normally already the LiDAR pose, so identity is default.
+sensor_extrinsic_translation: [0.0, 0.0, 0.0]
+sensor_extrinsic_rpy: [0.0, 0.0, 0.0]
+
+publish_every_n_frames: 5
+publish_known_voxels: true
+publish_2d_grid: true
+grid_z_min: -1.0
+grid_z_max: 2.0
+grid_max_cells: 4000000

@@ -1,8 +1,12 @@
 # raycast_static_map
 
-A real-time ROS1 (Noetic) sparse voxel mapper for LiDAR. The node synchronizes registered point clouds with odometry, performs 3D DDA ray-casting with log-odds occupancy fusion and a truncated ESDF, and optionally removes dynamic obstacles with a Dynablox-style ever-free test. The occupancy criterion can be switched with `use_tsdf` between a log-odds probability threshold and a truncated signed distance field.
+A real-time ROS1 (Noetic) sparse voxel mapper for LiDAR. The node synchronizes registered point clouds with odometry, performs 3D DDA ray-casting with log-odds occupancy fusion and a truncated ESDF, and optionally removes dynamic obstacles with a Dynablox-style ever-free test. The occupancy criterion can be switched with `use_tsdf` between a log-odds probability threshold and a truncated signed distance field. Detected dynamic clusters are associated across frames and **tracked with a constant-velocity Kalman filter** to estimate velocity and predict future positions.
 
 Key highlights: the node **publishes both a truncated ESDF and a TSDF alongside the occupancy value for every voxel** (`x/y/z/occupancy/esdf/tsdf`), ready for planning, collision checking and occupancy-based learning.
+
+![Sparse voxel map with tracked dynamic objects](imgs/mapping_overview.png)
+
+*RViz: sparse occupancy voxels colored by height, the LiDAR trajectory, and tracked dynamic objects shown as wireframe boxes with per-id colors, an id/speed label, a velocity arrow and a predicted-position sphere. Tracking runs a constant-velocity Kalman filter per object.*
 
 ## Table of contents
 
@@ -14,6 +18,7 @@ Key highlights: the node **publishes both a truncated ESDF and a TSDF alongside 
 - [Quick start](#quick-start)
 - [Parameters](#parameters)
 - [Dynamic objects](#dynamic-objects)
+- [Examples](#examples)
 - [Troubleshooting](#troubleshooting)
 - [Data and ROS bags](#data-and-ros-bags)
 - [Repository layout](#repository-layout)
@@ -145,6 +150,19 @@ Pipeline: the mapper emits clusters (centroid + AABB) → `ObjectTracker` associ
 - **Prediction**: `p_pred = p + v * track_velocity_horizon`.
 - **Visualization**: per object a wireframe box (`LINE_LIST`), a text label (`id N  v m/s`), a velocity arrow and a prediction sphere, each with a distinct per-id color.
 
+## Examples
+
+![Tracked dynamic object with velocity arrow and prediction sphere](imgs/dynamic_tracking.png)
+
+*Close-up of a tracked dynamic object: wireframe bounding box, id/speed label, velocity arrow and predicted-position sphere produced by the Kalman filter.*
+
+Run the DOALS Hauptgebaeude sequence 1 example (see [Data and ROS bags](#data-and-ros-bags) for how to obtain and convert the bag):
+
+```bash
+roslaunch raycast_static_map doals_validation.launch rviz:=true
+rosbag play $(rospack find raycast_static_map)/data/doals_hauptgebaeude_sequence_1/sequence_1.bag --rate 0.5
+```
+
 ## Troubleshooting
 
 Ever-free detection fails on **grazing surfaces**, which is the most common source of false dynamics:
@@ -184,6 +202,7 @@ raycast_static_map/
 ├── rviz/          doals_mapping.rviz
 ├── scripts/       converted_sequence_to_bag.py, check_mapping_output.py
 ├── test/          test_raycast_mapper.cpp
+├── imgs/          mapping_overview.png, dynamic_tracking.png
 ├── data/          not tracked (only .gitkeep)
 ├── CMakeLists.txt, package.xml, README.md, VALIDATION.md
 ```

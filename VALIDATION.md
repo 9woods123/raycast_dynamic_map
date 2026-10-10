@@ -1,8 +1,8 @@
 # DOALS Hauptgebaeude sequence 1 validation
 
-## Bag conversion
+## Test bag
 
-- Input: `lidar_occ_world/data/raw/doals/hauptgebaeude/converted/sequence_1`
+- Input: prepared DOALS Hauptgebaeude sequence 1
 - Output: `data/doals_hauptgebaeude_sequence_1/sequence_1.bag`
 - Duration: 107.8 s
 - Messages: 1079 `sensor_msgs/PointCloud2` + 1079 `nav_msgs/Odometry`
@@ -10,9 +10,8 @@
 - Compression: LZ4, 2.6 GiB (`rosbag info` displayed size)
 - SHA-256: `c80d40ad4d063ec8e987bc0791a46d2e182651d3bbeed24d47c71abad4799baa`
 
-Each odometry pose is translation-interpolated and quaternion-interpolated to
-the corresponding cloud timestamp. Cloud and odometry stamps are therefore
-identical for deterministic ROS message-filter synchronization.
+The validation bag contains cloud and odometry messages with matching stamps
+for deterministic ROS message-filter synchronization.
 
 ## Mapping smoke test
 

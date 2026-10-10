@@ -41,8 +41,9 @@ install(TARGETS raycast_mapper raycast_static_map_node
 install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 install(DIRECTORY launch config rviz DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 catkin_install_python(PROGRAMS
-  scripts/converted_sequence_to_bag.py
   scripts/check_mapping_output.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(PROGRAMS scripts/download_doals_hauptgebaeude.sh
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 if(CATKIN_ENABLE_TESTING)

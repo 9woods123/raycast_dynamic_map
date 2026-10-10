@@ -1,3 +1,2 @@
 # Datasets and ROS bags are intentionally not tracked. Put them here locally:
-#   data/doals_hauptgebaeude_sequence_1/sequence_1.bag
-# See README.md for how to obtain and convert the DOALS data.
+# Download DOALS Hauptgebaeude with scripts/download_doals_hauptgebaeude.sh.

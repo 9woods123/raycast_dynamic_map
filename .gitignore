@@ -8,7 +8,7 @@ logs/
 *.log
 
 # ---------------------------------------------------------------------------
-# Datasets and bags (large binaries; download/convert them locally instead)
+# Datasets and bags (large binaries; download them locally instead)
 # The data/ tree is kept via .gitkeep, everything else inside is ignored.
 # ---------------------------------------------------------------------------
 data/*

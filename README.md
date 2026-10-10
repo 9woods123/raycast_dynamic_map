@@ -156,11 +156,10 @@ Pipeline: the mapper emits clusters (centroid + AABB) → `ObjectTracker` associ
 
 *Close-up of a tracked dynamic object: wireframe bounding box, id/speed label, velocity arrow and predicted-position sphere produced by the Kalman filter.*
 
-Run the DOALS Hauptgebaeude sequence 1 example (see [Data and ROS bags](#data-and-ros-bags) for how to obtain and convert the bag):
+Download the original DOALS Hauptgebaeude data (see [Data and ROS bags](#data-and-ros-bags)):
 
 ```bash
-roslaunch raycast_static_map doals_validation.launch rviz:=true
-rosbag play $(rospack find raycast_static_map)/data/doals_hauptgebaeude_sequence_1/sequence_1.bag --rate 0.5
+rosrun raycast_static_map download_doals_hauptgebaeude.sh
 ```
 
 ## Troubleshooting
@@ -174,22 +173,36 @@ Note: `dynamic_z_min/dynamic_z_max` are interpreted in the **sensor frame** by d
 
 ## Data and ROS bags
 
-No datasets or bags are tracked (`.bag`, `.db3`, `.mcap`, `.pcd`, `.bin` are ignored); `data/` only keeps a `.gitkeep`. The example uses DOALS Hauptgebaeude sequence 1, converted to `data/doals_hauptgebaeude_sequence_1/sequence_1.bag`:
+No datasets or bags are tracked (`.bag`, `.db3`, `.mcap`, `.pcd`, `.bin` are ignored); `data/` only keeps a `.gitkeep`.
+
+Download the original DOALS Hauptgebaeude scene from the current ETH Research Collection bitstream (about 7.5 GB compressed):
 
 ```bash
-rosrun raycast_static_map converted_sequence_to_bag.py <converted_sequence_dir> \
-  $(rospack find raycast_static_map)/data/doals_hauptgebaeude_sequence_1/sequence_1.bag
+rosrun raycast_static_map download_doals_hauptgebaeude.sh
 ```
 
-Run mapping with RViz, then replay the bag (start the node first):
+The default output is:
+
+```text
+data/doals/hauptgebaeude/
+├── sequence_1/bag.bag
+└── sequence_2/bag.bag
+```
+
+Pass a different target root as the first argument when the package directory does not have enough free space:
 
 ```bash
-roslaunch raycast_static_map doals_validation.launch rviz:=true
-rosbag play $(rospack find raycast_static_map)/data/doals_hauptgebaeude_sequence_1/sequence_1.bag --rate 0.5
-rosrun raycast_static_map check_mapping_output.py   # validates fields and value ranges
+rosrun raycast_static_map download_doals_hauptgebaeude.sh /data/DOALS
 ```
 
-Both dynamic removal and tracking require a temporally continuous sequence. Measurement results are recorded in `VALIDATION.md`.
+The downloader supports retries, resume, ZIP integrity checking and automatic bag renaming. If ETH moves the file again, override the source without modifying the script:
+
+```bash
+DOALS_HG_URL='https://your-mirror/hauptgebaeude.zip' \
+  rosrun raycast_static_map download_doals_hauptgebaeude.sh /data/DOALS
+```
+
+The downloaded bags are the original DOALS ROS1 data. Their cloud topic is `/os1_cloud_node/points`, and poses are published as `geometry_msgs/TransformStamped` on `/T_map_os1_lidar`. The mapper itself consumes `PointCloud2 + nav_msgs/Odometry`; configure or bridge the pose input appropriately before replay. Both dynamic removal and tracking require a temporally continuous sequence.
 
 ## Repository layout
 
@@ -200,7 +213,7 @@ raycast_static_map/
 ├── src/           raycast_mapper.cpp, object_tracker.cpp, raycast_static_map_node.cpp
 ├── launch/        fastlio_raycast.launch, doals_validation.launch
 ├── rviz/          doals_mapping.rviz
-├── scripts/       converted_sequence_to_bag.py, check_mapping_output.py
+├── scripts/       download_doals_hauptgebaeude.sh, check_mapping_output.py
 ├── test/          test_raycast_mapper.cpp
 ├── imgs/          mapping_overview.png, dynamic_tracking.png
 ├── data/          not tracked (only .gitkeep)

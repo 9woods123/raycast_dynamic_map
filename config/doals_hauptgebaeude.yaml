@@ -28,8 +28,8 @@ tsdf_truncation: 0.60
 tsdf_surface_band: 0.3
 tsdf_max_weight: 100.0
 
-esdf_max_distance: 5.0
-esdf_update_every_n_frames: 20
+esdf_max_distance: 2.5
+esdf_update_every_n_frames: 1000
 
 
 # Dynablox-style ever-free dynamic filtering. Names/semantics follow

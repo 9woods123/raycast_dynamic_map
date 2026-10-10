@@ -1,0 +1,27 @@
+<launch>
+  <arg name="deskew" default="true"/>
+  <arg name="use_dynablox" default="true"/>
+  <arg name="use_tsdf" default="false"/>
+  <arg name="rviz" default="true"/>
+
+  <node pkg="raycast_static_map" type="doals_deskew_node"
+        name="doals_deskew" output="screen">
+    <rosparam command="load"
+              file="$(find raycast_static_map)/config/doals_deskew.yaml"/>
+    <param name="enabled" value="$(arg deskew)"/>
+  </node>
+
+  <node pkg="raycast_static_map" type="raycast_static_map_node"
+        name="raycast_static_map" output="screen">
+    <rosparam command="load"
+              file="$(find raycast_static_map)/config/doals_hauptgebaeude.yaml"/>
+    <param name="cloud_topic" value="/doals/lidar_points_deskewed"/>
+    <param name="odom_topic" value="/doals/odom_deskewed"/>
+    <param name="use_dynablox" value="$(arg use_dynablox)"/>
+    <param name="use_tsdf" value="$(arg use_tsdf)"/>
+  </node>
+
+  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="rviz"
+        args="-d $(find raycast_static_map)/rviz/doals_mapping.rviz"
+        output="screen"/>
+</launch>

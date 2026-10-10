@@ -34,7 +34,11 @@ add_executable(raycast_static_map_node src/raycast_static_map_node.cpp)
 target_compile_features(raycast_static_map_node PUBLIC cxx_std_14)
 target_link_libraries(raycast_static_map_node raycast_mapper ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
-install(TARGETS raycast_mapper raycast_static_map_node
+add_executable(doals_deskew_node src/doals_deskew_node.cpp)
+target_compile_features(doals_deskew_node PUBLIC cxx_std_14)
+target_link_libraries(doals_deskew_node ${catkin_LIBRARIES})
+
+install(TARGETS raycast_mapper raycast_static_map_node doals_deskew_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

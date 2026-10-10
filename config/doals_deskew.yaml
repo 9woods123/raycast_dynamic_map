@@ -1,0 +1,29 @@
+# Raw topics from the DOALS validation bag.
+input_cloud_topic: /doals/lidar_points
+input_odom_topic: /doals/odom
+
+# Synchronized outputs consumed by raycast_static_map_node.
+output_cloud_topic: /doals/lidar_points_deskewed
+output_odom_topic: /doals/odom_deskewed
+
+enabled: true
+subscriber_queue_size: 20
+sync_queue_size: 50
+sync_tolerance: 0.01
+
+# The converted bag stores per-point time as FLOAT32 seconds in `time`.
+# `auto` also recognizes integer `t` and `offset_time` as nanoseconds.
+point_time_field: auto
+point_time_scale: 0.0
+max_scan_duration: 0.12
+
+# Precomputed SE(3) poses per scan. Each point selects a pose using its own
+# timestamp; increasing this improves temporal accuracy at a small CPU cost.
+pose_bins: 128
+
+# T_body_lidar. Keep these identical to the raycast mapper extrinsics.
+sensor_extrinsic_translation: [0.0, 0.0, 0.0]
+sensor_extrinsic_rpy: [0.0, 0.0, 0.0]
+
+# Empty preserves the input LiDAR frame id.
+output_frame_id: ""

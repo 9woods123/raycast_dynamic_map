@@ -28,6 +28,7 @@ Key highlights: the node **publishes both a truncated ESDF and a TSDF alongside 
 
 - **Sparse hash voxel map**: only observed voxels are allocated, so memory grows with observations rather than with the explored volume.
 - **3D DDA ray-casting**: after deduplicating endpoint voxels a single traversal is performed; endpoints update occupied, intermediate voxels update free.
+- **Independent DOALS deskew node**: uses per-point acquisition time and adjacent odometry poses, with precomputed SE(3) pose bins, then republishes a synchronized corrected cloud/odometry pair for the unchanged mapper.
 - **Switchable occupancy criterion**: `use_tsdf=false` uses the fused log-odds probability threshold; `use_tsdf=true` uses the TSDF signed distance. Both share the same probability state, so the criterion can be switched at any time.
 - **Publishes both ESDF and TSDF**: every voxel in `~occupied_voxels` / `~known_voxels` carries `x/y/z/occupancy/esdf/tsdf`.
   - **ESDF**: truncated Euclidean distance obtained by multi-source propagation from all occupied voxels; the ESDF of free voxels is directly usable for planning and collision checking.
@@ -125,6 +126,34 @@ roslaunch raycast_static_map fastlio_raycast.launch input_cloud_in_world:=false 
 
 FAST-LIO already outputs in the `camera_init` world frame, so `input_cloud_in_world:=true` is the default. If odometry reports the body rather than the LiDAR pose, set `sensor_extrinsic_translation` and `sensor_extrinsic_rpy`.
 
+For the converted DOALS bag, start the independent deskew node and mapper together:
+
+```bash
+roslaunch raycast_static_map doals_deskew_validation.launch
+```
+
+Then play the bag in another terminal:
+
+```bash
+rosbag play src/raycast_static_map/data/doals_hauptgebaeude_sequence_1/sequence_1.bag
+```
+
+The data path is:
+
+```text
+/doals/lidar_points + /doals/odom
+              ↓ doals_deskew_node (one-scan delay)
+/doals/lidar_points_deskewed + /doals/odom_deskewed
+              ↓ raycast_static_map_node
+occupancy / ESDF / dynamic outputs
+```
+
+The corrected cloud is expressed in the LiDAR frame at the scan start and keeps all original fields (`time`, `ring`, etc.). Disable correction while retaining the same topic pipeline with `deskew:=false`.
+
+```bash
+roslaunch raycast_static_map doals_deskew_validation.launch deskew:=false
+```
+
 ## Parameters
 
 The full annotated list is in `config/fastlio.yaml` (DOALS example: `config/doals_hauptgebaeude.yaml`). All parameters can be overridden with `<rosparam>`.
@@ -132,6 +161,7 @@ The full annotated list is in `config/fastlio.yaml` (DOALS example: `config/doal
 | Group | Key parameters (default) |
 |---|---|
 | IO / sync | `cloud_topic` (`/cloud_registered`), `odom_topic` (`/Odometry`), `map_frame` (`camera_init`), `input_cloud_in_world` (`true`), `sync_tolerance` (`0.05`) |
+| DOALS deskew | `enabled` (`true`), `point_time_field` (`auto`), `point_time_scale` (`0`, automatic), `pose_bins` (`128`), `max_scan_duration` (`0.12`) |
 | Map | `resolution` (`0.20`), `min_range`/`max_range` (`1.0`/`80.0`), `prob_hit`/`prob_miss` (`0.70`/`0.40`), `occupied_probability` (`0.60`) |
 | TSDF | `use_tsdf` (`false`), `tsdf_truncation` (`0.60`), `tsdf_surface_band` (`0.10`), `tsdf_max_weight` (`30.0`) |
 | ESDF | `esdf_max_distance` (`5.0`), `esdf_update_every_n_frames` (`1`) |
